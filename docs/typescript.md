@@ -4,8 +4,6 @@ Read this before you write or review TypeScript.
 
 The goal is **strong types and simple code**, not clever TypeScript.
 
-Paths marked _(planned)_ do not exist yet.
-
 ## Compiler
 
 `packages/typescript-config/base.json` sets these flags. Every package extends it. Do not turn one off to make code compile. Fix the code.
@@ -36,27 +34,26 @@ verbatimModuleSyntax
 
 The base config also loads `@total-typescript/ts-reset`. For example, `JSON.parse` returns `unknown`.
 
-ESLint enforces many rules in this file. `eslint.config.js` turns on the typescript-eslint `strictTypeChecked` and `stylisticTypeChecked` presets, extra rules, and the anti-slop rules in `tools/eslint/anti-slop/`.
+ESLint enforces many rules in this file. `eslint.config.js` turns on the typescript-eslint `strictTypeChecked` and `stylisticTypeChecked` presets, extra rules, and the anti-slop rules in `tools/eslint/anti-slop/`. Do not turn off a rule to make code pass. Fix the code.
 
 ## No `any`
 
-- Do not use `any` in application code.
-- At untrusted boundaries use `unknown` and narrow it through validation.
+- Do not use `any`. ESLint refuses it.
 - If a third-party library forces `any`, contain it at the smallest boundary. Do not let it leak.
 
 ## Avoid type assertions
 
 Do not use `as SomeType` in place of modelling or validation.
 
-Assertions must be rare, local and justified. Acceptable cases: tightly contained interop, or branded-value construction after the invariant is set up. Put a `// SAFETY:` comment above each one that says why it is true.
+Assertions must be rare, local and justified. Acceptable cases: tightly contained interop, or branded-value construction after the invariant is set up. Put a `// SAFETY:` comment immediately before the assertion, or before the statement that contains it, and say why it is true. ESLint refuses an assertion without one.
 
-Use `satisfies` when you want to check a value against a type and keep its own, narrower type:
+Use `satisfies` when you want to check a value against a type and keep its own, narrower type. ESLint refuses `as` on an object literal.
 
 ```ts
-const toolLimits = {
-  "conversation.reply": 20,
-  "conversation.addNote": 10,
-} satisfies Record<CapabilityId, number>;
+const retryLimits = {
+  email: 3,
+  sms: 5,
+} satisfies Record<Channel, number>;
 ```
 
 Do not use non-null assertions (`value!`). Handle the missing case, or change the type so the value cannot be missing. ESLint refuses `!`.
@@ -64,22 +61,23 @@ Do not use non-null assertions (`value!`). Handle the missing case, or change th
 ## `undefined` and `null`
 
 - `undefined` means "not given": an optional parameter, an optional property or a missing key. With `exactOptionalPropertyTypes`, leave the key out. Do not set it to `undefined` unless the type says `| undefined`.
-- `null` means "known to have no value" in data that is stored or sent: `assignee: null` before a conversation is assigned. JSON has no `undefined`, so wire and storage shapes use `null`.
-- Do not allow both for one field. Pick the one that matches its meaning.
+- `null` means "known to have no value" in data that is stored or sent: `shippedAt: null` before an order ships. JSON has no `undefined`, so wire and storage shapes use `null`.
+- Do not allow both for one field. Pick the one that matches its meaning. ESLint refuses a type that allows both.
 
 ## Literal unions, not `enum`
 
 Use a union of string literals, with a `const` array when code must list the values:
 
 ```ts
-export const conversationStatuses = [
-  "open",
+export const orderStatuses = [
   "pending",
-  "snoozed",
-  "resolved",
-  "closed",
+  "paid",
+  "shipped",
+  "delivered",
+  "cancelled",
 ] as const;
-export type ConversationStatus = (typeof conversationStatuses)[number];
+
+export type OrderStatus = (typeof orderStatuses)[number];
 ```
 
 Do not use TypeScript `enum` or `const enum`. They emit code, and they do not match the strings on the wire. `erasableSyntaxOnly` refuses them.
@@ -91,21 +89,21 @@ Model state so that a wrong combination cannot be written.
 Prefer:
 
 ```ts
-type AgentRun =
-  | { readonly kind: "working"; readonly step: number }
-  | { readonly kind: "failed"; readonly reason: FailureReason }
-  | { readonly kind: "escalated"; readonly approvalId: ApprovalId }
-  | { readonly kind: "completed"; readonly outcome: RunOutcome };
+type Payment =
+  | { readonly kind: "pending" }
+  | { readonly kind: "authorised"; readonly authorisationId: AuthorisationId }
+  | { readonly kind: "failed"; readonly reason: DeclineReason }
+  | { readonly kind: "captured"; readonly capturedAt: Date };
 ```
 
 Avoid:
 
 ```ts
-type AgentRun = {
+type Payment = {
   status: string;
-  step?: number;
+  authorisationId?: AuthorisationId;
   reason?: string;
-  approvalId?: ApprovalId;
+  capturedAt?: Date;
 };
 ```
 
@@ -116,13 +114,12 @@ Booleans and optional fields that only make sense together are a sign that a dis
 Use **Zod** where data crosses an untrusted boundary:
 
 - HTTP input
-- WebSocket messages
+- WebSocket and queue messages
 - environment and configuration
-- inbound email and chat payloads
-- integration API responses, such as Stripe, where required
-- AI structured output, including generated `SurfaceDefinition` values
-- persisted data that crosses versioned boundaries, such as stored surfaces
-- external event and webhook payloads
+- third-party API responses
+- webhook payloads
+- AI structured output
+- stored data that crosses a version boundary
 
 ```mermaid
 flowchart LR
@@ -132,91 +129,62 @@ flowchart LR
 
 Do not create Zod schemas for internal objects. After the trust boundary, plain TypeScript types are enough.
 
-**Parse, don't validate.** Parse the value once, at the boundary, and pass on the parsed value with its type. Do not check a value and then keep using the unchecked one. Do not narrow outside data by hand with `typeof` checks. Derive the TypeScript type from the schema with `z.infer`, so the two cannot drift. Text that may be JSON goes through `parseUntrustedJson` in `packages/contracts/src/json.ts` _(planned)_, which returns a `JsonValue`, then through a schema.
+**Parse, don't validate.** Parse the value once, at the boundary, and pass on the parsed value with its type. Do not check a value and then keep using the unchecked one. Derive the TypeScript type from the schema with `z.infer`, so the two cannot drift.
+
+ESLint enforces this in two ways:
+
+- A function does not take an `unknown` parameter. Parse the value first, then pass the parsed type.
+- Code does not narrow outside data by hand with `typeof`. Use a schema.
+
+`JSON.parse` returns `unknown`, so pass its result straight to a schema.
 
 ## One owner per contract
 
-Each meaningful contract has one canonical definition. Do not redefine equivalent Conversation schemas, capability definitions, `SurfaceDefinition` shapes, AgentRun states, WebSocket messages or test fixture schemas across packages or tests.
+Each meaningful contract has one canonical definition. Do not redefine an equivalent schema, message shape or state type in another package or in a test.
 
-In this monorepo the owner of a shared contract is `packages/contracts` _(planned)_. Apps and other packages import from it.
+A contract that more than one package uses lives in one package under `packages/`. Other packages import it through that package's `exports`.
 
 Tests reuse production contracts where the contract is part of what they test.
 
 ## Branded identifiers
 
-Brand identifiers where confusing two primitives would cause a real bug:
+Brand an identifier where confusing two primitives would cause a real bug, such as passing an `OrderId` where a `CustomerId` is expected. In a multi-tenant system, brand the tenant identifier first. Confusing it causes a cross-tenant data leak.
 
-```text
-WorkspaceId
-UserId
-TeamId
-CustomerId
-AccountId
-ConversationId
-MessageId
-CapabilityId
-SurfaceId
-AgentRunId
-ApprovalId
+Brand the identifier in its schema, so that parsing creates the brand:
+
+```ts
+export const OrderId = z.uuid().brand<"OrderId">();
+
+export type OrderId = z.infer<typeof OrderId>;
 ```
-
-`WorkspaceId` matters most. Confusing it causes a cross-tenant data leak.
 
 ## Discriminated unions
 
-Model lifecycle and protocol state as explicit variants.
+Model lifecycle and protocol state as explicit variants, such as `Payment` above.
 
-```text
-AgentRunState: queued | compiling_context | working | awaiting_approval | escalated | completed | failed
+Make every switch over these variants exhaustive. A new variant must break the build until every relevant switch handles it.
 
-DomainEvent: ConversationCreated | MessageReceived | MessageSent | ConversationAssigned
-           | ConversationStatusChanged | ApprovalRequested | ApprovalDecided | AgentRunCompleted
+Write one `case` for each variant. Do not add a `default` clause to a switch over a union. ESLint (`switch-exhaustiveness-check`) reports a switch that misses a variant, and a `default` clause does not count as handling one.
 
-PolicyDecision: allow | deny | require_approval
-```
-
-Make every switch over these variants exhaustive. A new variant must break compilation until every relevant switch handles it.
-
-Write one `case` for each variant. Do not add a `default` clause to a switch over a union. A `default` catches a new variant silently, so the compiler cannot tell you about it.
-
-A switch that returns a value is exhaustive through its return type and `noImplicitReturns`. Do not add a check to it.
-
-A switch that returns no value needs an explicit check. Call `assertNever` from `packages/contracts/src/assert-never.ts` _(planned)_ in the `default` clause:
-
-```ts
-switch (message.type) {
-  case "presence.join":
-    joinPresence(message);
-    break;
-  case "draft.update":
-    updateDraft(message);
-    break;
-  default:
-    assertNever({ value: message, name: "inbox socket message" });
-}
-```
-
-Use a `default` clause without this check only for an open value, such as an HTTP method or a string from outside the application.
+A switch over an open value, such as an HTTP method or a string from outside the application, must have a `default` clause. ESLint refuses one without it.
 
 ## Function parameters
 
-- A function with two or more parameters takes one options object. Names at the call site say what each value is.
-- Do not pass a positional boolean. `render(surface, true)` says nothing. Use a named option or a literal union: `render({ surface, mode: "readonly" })`.
+- A function with two or more parameters takes one options object. Names at the call site say what each value is. ESLint refuses two or more positional parameters. Inline callbacks, such as `reduce((total, item) => ...)`, are exempt.
+- Do not pass a positional boolean. `render(order, true)` says nothing. Use a named option or a literal union: `render({ order, mode: "readonly" })`.
 
 ## Simple generics
 
 Use a generic when a function really works for many types and the caller needs the type back, such as a result or a collection helper.
 
-Do not write clever type-level code: deep conditional types, recursive mapped types or type-level parsing. If a type needs a comment to explain how it works, use a simpler type, even if it is a little less precise.
+Do not write clever type-level code: deep conditional types, recursive mapped types or type-level parsing. If a type needs a comment to explain how it works, use a simpler type, even if it is a little less precise. ESLint refuses a conditional type inside another.
 
 ## Immutable data
 
 Application data is immutable by default.
 
-- Use `readonly` and `ReadonlyArray<T>`.
-- Return updated values. Do not mutate inputs.
-
-This matters most for surface definitions, compiled context, agent state, AgentRun state, events, approvals and policy decisions.
+- Use `readonly` and `ReadonlyArray<T>`. ESLint refuses `readonly T[]`.
+- Return updated values. Do not mutate inputs. ESLint refuses assignment to a parameter or to its properties.
 
 ## Functional light
 
@@ -233,7 +201,7 @@ Prefer:
 
 Avoid:
 
-- deep nested conditionals
+- deep nested conditionals (ESLint refuses blocks nested more than 3 deep)
 - inheritance-heavy designs
 - mutation-heavy services
 - complicated FP abstractions
@@ -248,12 +216,12 @@ When failure is expected domain behaviour, return an explicit result type (`Succ
 
 Examples:
 
-- capability denied by permission or policy
-- approval required
-- surface version stale
-- integration unavailable
-- model output invalid against the surface catalogue
-- conversation already resolved
+- permission denied
+- payment declined
+- record changed since it was read
+- third-party service unavailable
+- input invalid against its schema
+- order already cancelled
 
 Unexpected infrastructure or programming failures may throw. Handle them at system boundaries.
 
