@@ -1,0 +1,30 @@
+{
+  "name": "ts-monorepo-template",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "format": "bun fmt",
+    "format:check": "bun fmt --check",
+    "knip": "knip"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@oxlint/plugins": "1.78.0",
+    "@types/bun": "^1.4.4",
+    "eslint": "^10.13.0",
+    "knip": "^6.42.1",
+    "turbo": "^2.11.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "type": "module"
+}

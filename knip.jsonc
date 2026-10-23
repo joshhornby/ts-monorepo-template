@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Vendored third-party code; keep identical to upstream
+  "ignore": ["tools/eslint/anti-slop/**"],
+  // `bun fmt` is a Bun subcommand, not a separate binary
+  "ignoreBinaries": ["fmt"],
+  // Installed ahead of use; remove once code imports it
+  "ignoreDependencies": ["zod"],
+}
