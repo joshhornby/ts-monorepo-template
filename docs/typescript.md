@@ -2,7 +2,7 @@
 
 Read this before you write or review TypeScript.
 
-The goal is **strong types and simple code**, not clever TypeScript. These rules follow CityPaul's published TypeScript and functional-development guidance.
+The goal is **strong types and simple code**, not clever TypeScript.
 
 Paths marked _(planned)_ do not exist yet.
 
