@@ -8,3 +8,9 @@ Vendored from https://github.com/dmmulroy/anti-slop (MIT, see `LICENSE`).
 The rules target Oxlint's JS plugin API, but the plugin is wrapped in
 `eslintCompatPlugin`, so it loads in ESLint unchanged. Edit rules here freely;
 to pull upstream changes, re-copy the source and re-apply local edits.
+
+## Local edits
+
+- `rules/require-safety-comment-for-type-assertion.ts`: compare `range` offsets, not
+  `start`/`end`. typescript-eslint nodes have no `start`/`end`, so under ESLint the rule
+  rejected every assertion, including one with a `SAFETY:` comment.
