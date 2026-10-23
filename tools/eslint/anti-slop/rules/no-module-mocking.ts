@@ -37,21 +37,33 @@ function isTestFrameworkObject(
   });
 }
 
+// Local edit: Bun's module mocking is `mock.module()`, with `mock` imported from "bun:test".
+function isBunMockObject(sourceCode: SourceCode, expression: ESTree.Expression): boolean {
+  if (expression.type !== "Identifier") return false;
+  const variable = resolveVariable(sourceCode, expression);
+  if (variable === null) return false;
+  return variable.defs.some(
+    (definition) =>
+      definition.type === "ImportBinding" &&
+      definition.parent?.type === "ImportDeclaration" &&
+      definition.parent.source.value === "bun:test" &&
+      importedName(definition.node) === "mock",
+  );
+}
+
 function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): boolean {
   if (!("property" in callee) || !("object" in callee) || !("computed" in callee)) return false;
-  if (!isTestFrameworkObject(sourceCode, callee.object)) return false;
   const property = callee.property;
   const method = callee.computed
-    ? property.type === "Literal" &&
-      (property.value === "doMock" ||
-        property.value === "mock" ||
-        property.value === "unstable_mockModule")
+    ? property.type === "Literal" && typeof property.value === "string"
       ? property.value
       : null
     : property.type === "Identifier"
       ? property.name
       : null;
-  return method !== null && moduleMockMethods.has(method);
+  if (method === null) return false;
+  if (isBunMockObject(sourceCode, callee.object)) return method === "module";
+  return isTestFrameworkObject(sourceCode, callee.object) && moduleMockMethods.has(method);
 }
 
 /** Ban test framework module mocking in favor of real dependency seams. */
@@ -60,7 +72,7 @@ export const noModuleMockingRule = defineRule({
     type: "problem",
     docs: {
       description:
-        "Disallow Vitest and Jest module mocking; tests must replace dependencies through real interfaces.",
+        "Disallow Vitest, Jest and Bun module mocking; tests must replace dependencies through real interfaces.",
     },
     messages: {
       moduleMock:
