@@ -2,6 +2,21 @@
 
 Turborepo monorepo using TypeScript and Bun.
 
+## Start a new project
+
+1. Create the repo from this template:
+
+   ```sh
+   gh repo create <name> --template joshhornby/ts-monorepo-template --private --clone
+   ```
+
+2. Set `name` in the root `package.json` to the project name.
+3. Change the title of this README. Then delete this section.
+4. Add the project's terms to the glossary in `CONTEXT.md`.
+5. Replace the `greet` example in `packages/core` and `apps/api` with real code.
+6. Run `bun install`, then the commands below. All of them must pass.
+7. A template does not copy repo settings. On GitHub, add a ruleset for `main` that requires a pull request and the `check` status from CI. Turn on Dependabot alerts and secret scanning where your plan allows them.
+
 ## Layout
 
 - `apps/api` – Bun HTTP server
