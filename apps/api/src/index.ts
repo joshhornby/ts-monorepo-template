@@ -3,7 +3,12 @@ import { greet } from "@repo/core";
 const server = Bun.serve({
   port: Number(process.env["PORT"] ?? 3000),
   fetch(req) {
-    const name = new URL(req.url).searchParams.get("name") ?? "world";
+    const url = new URL(req.url);
+
+    // `bun run up` waits for this to answer before it reports the URL.
+    if (url.pathname === "/health") return new Response("ok");
+
+    const name = url.searchParams.get("name") ?? "world";
 
     return new Response(greet(name));
   },
