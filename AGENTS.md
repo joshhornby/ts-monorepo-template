@@ -14,6 +14,15 @@
 - When lint or typecheck fails, change the code. The config stays as it is.
 - `tools/eslint/anti-slop/` is vendored. Record each edit to it under "Local edits" in its `UPSTREAM.md`.
 
+## Running the app
+
+- Start services with `bun run up --json`. It returns once they are healthy. Read each URL from its output. Do not assume a port.
+- Do not poll or sleep around `up`. If it fails, it exits non-zero and prints the service's last log lines.
+- Use `bun run status --json` and `bun run logs <service> -n 50` to see what is running.
+- Run `bun run down` when you are done.
+- Run `bun run doctor --json` before you say something cannot run. It names what is missing and how to fix it.
+- Only `bun run setup` installs. No other command installs anything or prompts. A command you add that deletes data takes `--yes`.
+
 ## Done
 
 A change is done when every step in `.github/workflows/ci.yml` passes locally.

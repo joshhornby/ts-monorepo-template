@@ -14,7 +14,13 @@
     "lint": "turbo run lint",
     "format": "bun fmt",
     "format:check": "bun fmt --check",
-    "knip": "knip"
+    "knip": "knip",
+    "setup": "bun install && bun packages/dev/src/cli.ts setup && bun packages/dev/src/cli.ts doctor",
+    "doctor": "bun packages/dev/src/cli.ts doctor",
+    "up": "bun packages/dev/src/cli.ts up",
+    "down": "bun packages/dev/src/cli.ts down",
+    "status": "bun packages/dev/src/cli.ts status",
+    "logs": "bun packages/dev/src/cli.ts logs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

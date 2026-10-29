@@ -36,6 +36,19 @@
         "@repo/typescript-config": "workspace:*",
       },
     },
+    "packages/dev": {
+      "name": "@repo/dev",
+      "version": "0.0.0",
+      "bin": {
+        "dev": "./src/cli.ts",
+      },
+      "dependencies": {
+        "zod": "^4.6.7",
+      },
+      "devDependencies": {
+        "@repo/typescript-config": "workspace:*",
+      },
+    },
     "packages/typescript-config": {
       "name": "@repo/typescript-config",
       "version": "0.0.0",
@@ -170,6 +183,8 @@
     "@repo/api": ["@repo/api@workspace:apps/api"],
 
     "@repo/core": ["@repo/core@workspace:packages/core"],
+
+    "@repo/dev": ["@repo/dev@workspace:packages/dev"],
 
     "@repo/typescript-config": ["@repo/typescript-config@workspace:packages/typescript-config"],
 
