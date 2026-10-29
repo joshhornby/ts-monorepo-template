@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "bun test",
-    "lint": "eslint ."
+    "lint": "oxlint --type-aware"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

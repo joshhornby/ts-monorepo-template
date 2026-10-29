@@ -5,9 +5,12 @@ Vendored from https://github.com/dmmulroy/anti-slop (MIT, see `LICENSE`).
 - Commit: `13909c9e07590f5a85d93c62712259fe14a883f7` (2026-10-13)
 - Source: `skills/install-anti-slop/assets/anti-slop/`, without the `effect/` rule group (this repo does not use Effect)
 
-The rules target Oxlint's JS plugin API, but the plugin is wrapped in
-`eslintCompatPlugin`, so it loads in ESLint unchanged. Edit rules here freely;
-to pull upstream changes, re-copy the source and re-apply local edits.
+The rules target Oxlint's JS plugin API, and `.oxlintrc.json` loads them as a JS plugin.
+The plugin is still wrapped in `eslintCompatPlugin`, so it also loads in ESLint. Edit rules
+here freely; to pull upstream changes, re-copy the source and re-apply local edits.
+
+This folder was at `tools/eslint/anti-slop/` while the repo linted with ESLint. The
+`range` edits below date from then. Oxlint nodes have `range` too, so they stay.
 
 ## Local edits
 

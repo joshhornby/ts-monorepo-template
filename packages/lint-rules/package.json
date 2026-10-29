@@ -1,0 +1,22 @@
+{
+  "name": "@repo/lint-rules",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "bun test",
+    "lint": "oxlint --type-aware"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "1.90.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "oxlint": "1.90.0"
+  }
+}
