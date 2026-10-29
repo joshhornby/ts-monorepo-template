@@ -12,7 +12,7 @@
 - Tests use `bun:test` and sit next to the code as `*.test.ts`.
 - A package imports another package through `@repo/<name>`, declared as `"workspace:*"`.
 - When lint or typecheck fails, change the code. The config stays as it is.
-- `tools/eslint/anti-slop/` is vendored. Record each edit to it under "Local edits" in its `UPSTREAM.md`.
+- `tools/oxlint/anti-slop/` is vendored. Record each edit to it under "Local edits" in its `UPSTREAM.md`.
 
 ## Running the app
 

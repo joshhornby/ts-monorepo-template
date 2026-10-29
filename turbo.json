@@ -20,8 +20,9 @@
       "dependsOn": ["^lint"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/eslint.config.js",
-        "$TURBO_ROOT$/tools/eslint/**"
+        "$TURBO_ROOT$/.oxlintrc.json",
+        "$TURBO_ROOT$/tools/oxlint/**",
+        "$TURBO_ROOT$/packages/lint-rules/src/**"
       ]
     }
   }
