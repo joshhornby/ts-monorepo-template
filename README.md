@@ -13,8 +13,8 @@ Turborepo monorepo using TypeScript and Bun.
 2. Set `name` in the root `package.json` to the project name.
 3. Change the title of this README. Then delete this section.
 4. Add the project's terms to the glossary in `CONTEXT.md`.
-5. Replace the orders example in `packages/core`, `packages/contracts`, `apps/api` and `apps/web` with real code. Keep its patterns: see [The example](#the-example).
-6. Run `bun run setup`, then the commands below. All of them must pass.
+5. Replace the orders example in `packages/core`, `packages/contracts`, `packages/db`, `apps/api` and `apps/web` with real code. Keep its patterns: see [The example](#the-example).
+6. Install Docker. Run `bun run setup`, then the commands below. All of them must pass.
 7. A template does not copy repo settings. On GitHub, add a ruleset for `main` that requires a pull request and the `check` status from CI. Turn on Dependabot alerts and secret scanning where your plan allows them.
 
 ## Layout
@@ -23,6 +23,7 @@ Turborepo monorepo using TypeScript and Bun.
 - `apps/web` – [TanStack Start](https://tanstack.com/start) app for orders. Its server functions call `apps/api`
 - `packages/contracts` – the HTTP request and response schemas that `apps/api` and `apps/web` share
 - `packages/core` – the order domain: pure functions, no I/O
+- `packages/db` – Postgres schema, migrations and the order store, with [Drizzle](https://orm.drizzle.team)
 - `packages/dev` – the `setup`, `doctor`, `up`, `down`, `status` and `logs` commands
 - `packages/typescript-config` – shared `tsconfig` bases: `base.json` for Bun code, `react.json` for the web app
 - `tools/eslint/anti-slop` – vendored [anti-slop](https://github.com/dmmulroy/anti-slop) lint rules (see `UPSTREAM.md`)
@@ -43,6 +44,8 @@ A small orders domain shows the patterns in `docs/typescript.md` and `docs/testi
 | Dependencies passed in, not module-mocked                | `Dependencies` in `apps/api/src/server.ts`                              |
 | Domain tests                                             | `packages/core/src/order.test.ts`                                       |
 | Integration tests over real HTTP                         | `apps/api/src/server.test.ts`                                           |
+| Database tests on a real Postgres in the test process    | `packages/db/src/order-store.test.ts`                                   |
+| Illegal states refused by the database too               | the `orders_status_columns` check in `packages/db/src/schema.ts`        |
 | Server functions that call the API and parse its answers | `apps/web/src/orders/`                                                  |
 | Browser tests of the main journeys                       | `apps/web/e2e/orders.e2e.ts`                                            |
 
@@ -56,14 +59,14 @@ The API:
 | `POST /orders/:id/ship`   |                          | the shipped order, or 409                       |
 | `POST /orders/:id/cancel` | `{ "reason" }`           | the cancelled order, or 409 once it has shipped |
 
-Errors are `{ "error": { "kind", "message" } }`. Orders are kept in memory until the project has a database.
+Errors are `{ "error": { "kind", "message" } }`. Orders are kept in Postgres.
 
 ## Commands
 
 ```sh
 bun run setup      # install dependencies, create .env, run doctor; safe to re-run
 bun run doctor     # report what is missing and what breaks without it
-bun run dev        # run all apps in watch mode, in the foreground
+bun run dev        # run all apps in watch mode, in the foreground; set DATABASE_URL first, or use `bun run up`
 bun run build      # build everything
 bun run test       # run tests
 bun run e2e        # run browser tests against the stack that `bun run up` started
@@ -73,6 +76,14 @@ bun run format     # format with bun fmt (Prettier defaults)
 bun run format:check
 bun run knip       # find unused files, exports and dependencies
 ```
+
+## Database
+
+`bun run up` starts Postgres in Docker (`compose.yaml`) before the services, and gives `api` its `DATABASE_URL`. The API applies pending migrations when it starts. Each checkout has its own compose project, so its own data. `bun run down` stops the containers and keeps the data.
+
+Tests need no Docker. `createTestDatabase()` from `@repo/db/testing` opens [PGlite](https://pglite.dev), which is Postgres compiled to WebAssembly, in the test process. It takes about two seconds to start, so open one per test file.
+
+To change the schema, edit `packages/db/src/schema.ts`, then run `bun run --cwd packages/db generate --name <change>` and commit the migration it writes.
 
 ## Running the app in the background
 
@@ -87,7 +98,7 @@ bun run down             # stop everything and free the slot
 
 `up` exits non-zero and prints the last 50 log lines when a service does not become healthy. It waits for `GET /health` to answer 200.
 
-`up` gives each service its own `PORT`. A service that calls another gets its URL too: `web` gets `API_URL`. See `environment` in `packages/dev/src/workspace.ts`.
+`up` gives each service its own `PORT`. A service that calls another gets its URL too: `web` gets `API_URL`, and `api` gets `DATABASE_URL`. See `environment` in `packages/dev/src/workspace.ts`.
 
 Each checkout takes a slot, so up to three copies of the stack run on one machine without sharing ports. Slot 0 uses ports from 3000, slot 1 from 3010, slot 2 from 3020. When every slot is taken, `up` names the checkouts that hold them. A slot whose checkout was deleted is reclaimed.
 

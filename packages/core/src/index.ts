@@ -10,4 +10,6 @@ export {
   type ShipOrderFailure,
 } from "./order.ts";
 
+export type { OrderStore } from "./order-store.ts";
+
 export { failure, success, type Result } from "./result.ts";

@@ -17,7 +17,13 @@ function createMachine() {
 
       mkdirSync(root, { recursive: true });
 
-      return { root, slotsDirectory, basePort: 3000, services: [] };
+      return {
+        root,
+        slotsDirectory,
+        basePort: 3000,
+        services: [],
+        infrastructure: null,
+      };
     },
   };
 }

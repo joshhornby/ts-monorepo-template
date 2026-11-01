@@ -1,13 +1,21 @@
-import { expect, test } from "bun:test";
+import { afterAll, expect, test } from "bun:test";
 import { z } from "zod";
 
 import { OrderId } from "@repo/core";
+import { createOrderStore } from "@repo/db";
+import { createTestDatabase } from "@repo/db/testing";
 
-import { createInMemoryOrderStore } from "./orders/store.ts";
 import { ErrorJson, OrderJson } from "@repo/contracts";
 import { createServer } from "./server.ts";
 
 const now = new Date("2026-03-01T12:00:00Z");
+
+// One database for the file. Each test starts its own server and makes its own orders.
+const connection = await createTestDatabase();
+
+afterAll(async () => {
+  await connection.close();
+});
 
 interface RunningApi extends Disposable {
   readonly url: string;
@@ -18,7 +26,7 @@ function startApi(): RunningApi {
   const server = createServer({
     port: 0,
     dependencies: {
-      orders: createInMemoryOrderStore(),
+      orders: createOrderStore(connection.database),
       now: () => now,
       newOrderId: () => OrderId.parse(crypto.randomUUID()),
     },
@@ -94,7 +102,7 @@ test("places an order and lists it", async () => {
     .array(OrderJson)
     .parse(await (await request({ api, path: "/orders" })).json());
 
-  expect(listed).toEqual([order]);
+  expect(listed).toContainEqual(order);
 });
 
 test("refuses an order with no item or a quantity below one", async () => {

@@ -15,7 +15,21 @@ export interface Service {
    */
   readonly environment?: (context: {
     readonly urlOf: (name: string) => string;
+    /** The port given to an infrastructure variable, such as POSTGRES_PORT. */
+    readonly portOf: (variable: string) => number;
   }) => Readonly<Record<string, string>>;
+}
+
+/** Containers that `up` starts with Docker Compose before any service, and `down` stops. */
+export interface Infrastructure {
+  /** Relative to the workspace root. */
+  readonly composeFile: string;
+  /** Variables the compose file reads, each set to a port in the slot. */
+  readonly ports: ReadonlyArray<{
+    readonly variable: string;
+    /** Added to the slot's base port, like a service's. */
+    readonly portOffset: number;
+  }>;
 }
 
 /** Where the commands run and what they start. Tests pass their own. */
@@ -25,6 +39,7 @@ export interface Workspace {
   readonly slotsDirectory: string;
   readonly basePort: number;
   readonly services: ReadonlyArray<Service>;
+  readonly infrastructure: Infrastructure | null;
 }
 
 export const slotCount = 3;
@@ -44,6 +59,9 @@ export const defaultWorkspace: Workspace = {
       directory: "apps/api",
       command: ["bun", "--watch", "src/index.ts"],
       portOffset: 0,
+      environment: ({ portOf }) => ({
+        DATABASE_URL: `postgres://postgres:postgres@localhost:${String(portOf("POSTGRES_PORT"))}/app`,
+      }),
     },
     {
       name: "web",
@@ -53,6 +71,10 @@ export const defaultWorkspace: Workspace = {
       environment: ({ urlOf }) => ({ API_URL: urlOf("api") }),
     },
   ],
+  infrastructure: {
+    composeFile: "compose.yaml",
+    ports: [{ variable: "POSTGRES_PORT", portOffset: 9 }],
+  },
 };
 
 export function stateDirectory(workspace: Workspace): string {
@@ -62,11 +84,26 @@ export function stateDirectory(workspace: Workspace): string {
 export function servicePort(options: {
   readonly workspace: Workspace;
   readonly slot: number;
-  readonly service: Service;
+  readonly service: Pick<Service, "portOffset">;
 }): number {
   return (
     options.workspace.basePort +
     options.slot * portsPerSlot +
     options.service.portOffset
+  );
+}
+
+/** Each infrastructure variable, set to its port in the slot. */
+export function infrastructurePorts(options: {
+  readonly workspace: Workspace;
+  readonly slot: number;
+}): Readonly<Record<string, string>> {
+  const ports = options.workspace.infrastructure?.ports ?? [];
+
+  return Object.fromEntries(
+    ports.map((port) => [
+      port.variable,
+      String(servicePort({ ...options, service: port })),
+    ]),
   );
 }
