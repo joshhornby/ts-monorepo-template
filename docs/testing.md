@@ -228,6 +228,8 @@ High coverage is valuable for core domain behaviour, but do not write tests pure
 
 A well-tested module should give us confidence that meaningful behaviour, failure modes and important branches are protected.
 
+`packages/core` runs its tests with `--coverage`, and its `bunfig.toml` sets `coverageThreshold`. `bun run test` fails when line or function coverage drops below it. `bun test` reads `bunfig.toml` from the package folder, not the repo root, so a package that wants a threshold needs its own.
+
 ## Running tests
 
 Tests use `bun:test`. Turborepo runs each task in every package that defines it, and caches the result.
