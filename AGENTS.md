@@ -5,6 +5,7 @@
 - **TypeScript**: read `docs/typescript.md` before you write or review TypeScript.
 - **Tests**: read `docs/testing.md` before you write or review tests.
 - **Terms**: use the terms in `CONTEXT.md`. When you name a new domain concept, add it to the glossary.
+- **Decisions**: read `docs/adr/` before you change how the project is built. Record a significant decision as an ADR, as `docs/adr/README.md` describes.
 
 ## Conventions
 

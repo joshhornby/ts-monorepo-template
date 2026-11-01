@@ -15,11 +15,14 @@ Turborepo monorepo using TypeScript and Bun.
 4. Add the project's terms to the glossary in `CONTEXT.md`.
 5. Replace the `greet` example in `packages/core` and `apps/api` with real code.
 6. Run `bun run setup`, then the commands below. All of them must pass.
-7. A template does not copy repo settings. On GitHub, add a ruleset for `main` that requires a pull request and the `check` status from CI. Turn on Dependabot alerts and secret scanning where your plan allows them.
+7. Change the owner in `.github/CODEOWNERS` to your own user or team.
+8. A template does not copy repo settings. On GitHub, add a ruleset for `main` that requires a pull request and the `check` status from CI. Turn on Dependabot alerts and secret scanning where your plan allows them.
 
 ## Layout
 
+- `.claude` – shared Claude Code settings: allowed commands, a hook that formats each edited file, and the `add-package` and `add-service` skills
 - `apps/api` – Bun HTTP server
+- `docs` – TypeScript and testing standards, and architecture decision records in `docs/adr`
 - `packages/core` – shared TypeScript library
 - `packages/dev` – the `setup`, `doctor`, `up`, `down`, `status` and `logs` commands
 - `packages/typescript-config` – shared `tsconfig` base
@@ -32,7 +35,7 @@ bun run setup      # install dependencies, create .env, run doctor; safe to re-r
 bun run doctor     # report what is missing and what breaks without it
 bun run dev        # run all apps in watch mode, in the foreground
 bun run build      # build everything
-bun run test       # run tests
+bun run test       # run tests; packages/core also enforces a coverage threshold
 bun run typecheck  # typecheck all packages
 bun run lint       # lint with typescript-eslint (strict, type-checked) + anti-slop
 bun run format     # format with bun fmt (Prettier defaults)

@@ -1,0 +1,18 @@
+{
+  // Use the TypeScript version the repo installs, not the one VS Code ships.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // `bun run lint` runs `eslint .` in each package with the root flat config.
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  // `bun fmt` prints what Prettier prints with this repo's config, and has no
+  // editor extension. Format on save with Prettier so the editor agrees with
+  // `bun run format:check`.
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true
+}
