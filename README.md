@@ -13,17 +13,46 @@ Turborepo monorepo using TypeScript and Bun.
 2. Set `name` in the root `package.json` to the project name.
 3. Change the title of this README. Then delete this section.
 4. Add the project's terms to the glossary in `CONTEXT.md`.
-5. Replace the `greet` example in `packages/core` and `apps/api` with real code.
+5. Replace the orders example in `packages/core` and `apps/api` with real code. Keep its patterns: see [The example](#the-example).
 6. Run `bun run setup`, then the commands below. All of them must pass.
 7. A template does not copy repo settings. On GitHub, add a ruleset for `main` that requires a pull request and the `check` status from CI. Turn on Dependabot alerts and secret scanning where your plan allows them.
 
 ## Layout
 
-- `apps/api` – Bun HTTP server
-- `packages/core` – shared TypeScript library
+- `apps/api` – Bun HTTP server for orders
+- `packages/core` – the order domain: pure functions, no I/O
 - `packages/dev` – the `setup`, `doctor`, `up`, `down`, `status` and `logs` commands
 - `packages/typescript-config` – shared `tsconfig` base
 - `tools/eslint/anti-slop` – vendored [anti-slop](https://github.com/dmmulroy/anti-slop) lint rules (see `UPSTREAM.md`)
+
+## The example
+
+A small orders domain shows the patterns in `docs/typescript.md` and `docs/testing.md`. Copy them when you replace it.
+
+| Pattern                                   | Where                                      |
+| ----------------------------------------- | ------------------------------------------ |
+| Branded identifier, parsed by its schema  | `OrderId` in `packages/core/src/order.ts`  |
+| Lifecycle as a discriminated union        | `Order` in `packages/core/src/order.ts`    |
+| Exhaustive `switch` with no `default`     | `shipOrder`, `cancelOrder`, `toOrderJson`  |
+| Expected failures as values               | `Result` in `packages/core/src/result.ts`  |
+| Environment parsed once, at startup       | `apps/api/src/env.ts`                      |
+| Request bodies parsed at the boundary     | `parseBody` in `apps/api/src/server.ts`    |
+| Wire shapes as schemas, with `null`       | `apps/api/src/orders/wire.ts`              |
+| Dependencies passed in, not module-mocked | `Dependencies` in `apps/api/src/server.ts` |
+| Domain tests                              | `packages/core/src/order.test.ts`          |
+| Integration tests over real HTTP          | `apps/api/src/server.test.ts`              |
+
+The API:
+
+| Request                   | Body                     | Answers                                         |
+| ------------------------- | ------------------------ | ----------------------------------------------- |
+| `GET /orders`             |                          | every order, oldest first                       |
+| `POST /orders`            | `{ "item", "quantity" }` | 201 and the order                               |
+| `GET /orders/:id`         |                          | the order, or 404                               |
+| `POST /orders/:id/ship`   |                          | the shipped order, or 409                       |
+| `POST /orders/:id/cancel` | `{ "reason" }`           | the cancelled order, or 409 once it has shipped |
+
+Errors are `{ "error": { "kind", "message" } }`. Orders are kept in memory until the project has a database.
 
 ## Commands
 
