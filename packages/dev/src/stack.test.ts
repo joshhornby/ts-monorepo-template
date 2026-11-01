@@ -94,3 +94,40 @@ test("up refuses a service it does not know", async () => {
     names: ["worker"],
   });
 });
+
+test("a service is given the URL of another service in its slot", async () => {
+  const workspace = createWorkspace(`
+Bun.serve({
+  port: Number(process.env.PORT),
+  fetch: (req) =>
+    new Response(new URL(req.url).pathname === "/health" ? "ok" : process.env.API_URL),
+});
+`);
+
+  const [web] = workspace.services;
+
+  if (web === undefined) throw new Error("expected the web service");
+
+  const withApi: Workspace = {
+    ...workspace,
+    services: [
+      {
+        ...web,
+        environment: ({ urlOf }) => ({ API_URL: urlOf("api") }),
+      },
+      { ...web, name: "api", portOffset: 1 },
+    ],
+  };
+
+  const result = await up({ workspace: withApi, names: [] });
+
+  try {
+    if (result.kind !== "healthy") throw new Error(result.kind);
+
+    const [webUrl, apiUrl] = result.services.map((service) => service.url);
+
+    expect(await (await fetch(`${webUrl ?? ""}/`)).text()).toBe(apiUrl ?? "");
+  } finally {
+    await down(withApi);
+  }
+});

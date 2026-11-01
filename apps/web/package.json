@@ -1,0 +1,30 @@
+{
+  "name": "@repo/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "typecheck": "tsc",
+    "lint": "eslint .",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@repo/contracts": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.5"
+  }
+}

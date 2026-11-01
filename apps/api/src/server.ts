@@ -17,7 +17,7 @@ import {
   PlaceOrderRequest,
   toOrderJson,
   type ErrorJson,
-} from "./orders/wire.ts";
+} from "@repo/contracts";
 
 /** What the server needs from the outside world. Tests pass their own. */
 export interface Dependencies {

@@ -9,6 +9,13 @@ export interface Service {
   readonly command: ReadonlyArray<string>;
   /** Added to the slot's base port. Keep it below `portsPerSlot`. */
   readonly portOffset: number;
+  /**
+   * Variables to set besides PORT, such as the URL of another service.
+   * `urlOf` answers for this checkout's slot.
+   */
+  readonly environment?: (context: {
+    readonly urlOf: (name: string) => string;
+  }) => Readonly<Record<string, string>>;
 }
 
 /** Where the commands run and what they start. Tests pass their own. */
@@ -37,6 +44,13 @@ export const defaultWorkspace: Workspace = {
       directory: "apps/api",
       command: ["bun", "--watch", "src/index.ts"],
       portOffset: 0,
+    },
+    {
+      name: "web",
+      directory: "apps/web",
+      command: ["bun", "--bun", "vite", "dev"],
+      portOffset: 1,
+      environment: ({ urlOf }) => ({ API_URL: urlOf("api") }),
     },
   ],
 };

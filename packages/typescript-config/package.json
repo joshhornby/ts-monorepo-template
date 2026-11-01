@@ -4,7 +4,8 @@
   "private": true,
   "files": [
     "base.json",
-    "reset.d.ts"
+    "reset.d.ts",
+    "react.json"
   ],
   "dependencies": {
     "@total-typescript/ts-reset": "^0.6.1"

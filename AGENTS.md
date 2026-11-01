@@ -19,6 +19,7 @@
 - Start services with `bun run up --json`. It returns once they are healthy. Read each URL from its output. Do not assume a port.
 - Do not poll or sleep around `up`. If it fails, it exits non-zero and prints the service's last log lines.
 - Use `bun run status --json` and `bun run logs <service> -n 50` to see what is running.
+- Run browser tests with `bun run e2e` after `up`. They find the web URL themselves.
 - Run `bun run down` when you are done.
 - Run `bun run doctor --json` before you say something cannot run. It names what is missing and how to fix it.
 - Only `bun run setup` installs. No other command installs anything or prompts. A command you add that deletes data takes `--yes`.
