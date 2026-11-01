@@ -10,8 +10,12 @@ const Status = z.object({
   ),
 });
 
-/** The web URL for this checkout's slot, from `bun run status`. Run `bun run up` first. */
-function webUrl(): string {
+/**
+ * The web URL for this checkout's slot, from `bun run status`. Null when the
+ * web service is not running: tools such as knip load this file before `up`.
+ * `e2e/global-setup.ts` stops the run then.
+ */
+function webUrl(): string | null {
   const root = fileURLToPath(new URL("../..", import.meta.url));
 
   const status = Status.parse(
@@ -25,23 +29,20 @@ function webUrl(): string {
 
   const web = status.services.find((service) => service.name === "web");
 
-  if (web?.health !== "healthy") {
-    throw new Error("The web service is not running. Run `bun run up` first.");
-  }
-
-  return web.url;
+  return web?.health === "healthy" ? web.url : null;
 }
 
 export default defineConfig({
   testDir: "e2e",
   // `bun test` would also run *.spec.ts files, so browser tests use their own suffix.
   testMatch: "**/*.e2e.ts",
+  globalSetup: "./e2e/global-setup.ts",
   forbidOnly: process.env["CI"] !== undefined,
   // One worker, so tests that share the stack do not race each other.
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: process.env["WEB_URL"] ?? webUrl(),
+    baseURL: process.env["WEB_URL"] ?? webUrl() ?? "",
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: devices["Desktop Chrome"] }],
