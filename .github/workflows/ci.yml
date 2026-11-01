@@ -34,6 +34,8 @@ jobs:
       - run: bun run build
       - run: bun run knip
       - run: bun run doctor
+      - run: bun run --cwd apps/web playwright install --with-deps chromium
       # `up` fails unless every service answers its health check.
       - run: bun run up
+      - run: bun run e2e
       - run: bun run down

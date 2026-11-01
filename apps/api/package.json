@@ -12,6 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@repo/contracts": "workspace:*",
     "@repo/core": "workspace:*",
     "zod": "^4.6.7"
   },

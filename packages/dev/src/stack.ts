@@ -101,13 +101,24 @@ function logPath(options: {
   return join(stateDirectory(options.workspace), `${options.name}.log`);
 }
 
+const serviceUrl = (port: number): string => `http://localhost:${String(port)}`;
+
 function startService(options: {
   readonly workspace: Workspace;
   readonly slot: number;
   readonly service: Service;
 }): RunningService {
-  const { workspace, service } = options;
+  const { workspace, service, slot } = options;
   const port = servicePort(options);
+
+  const urlOf = (name: string): string => {
+    const other = workspace.services.find((each) => each.name === name);
+
+    if (other === undefined) throw new Error(`No service named ${name}.`);
+
+    return serviceUrl(servicePort({ workspace, slot, service: other }));
+  };
+
   const log = logPath({ workspace, name: service.name });
   const logFile = openSync(log, "w");
 
@@ -115,7 +126,11 @@ function startService(options: {
   // `down` can stop the whole group, including any children it starts.
   const subprocess = Bun.spawn([...service.command], {
     cwd: join(workspace.root, service.directory),
-    env: { ...process.env, PORT: String(port) },
+    env: {
+      ...process.env,
+      ...service.environment?.({ urlOf }),
+      PORT: String(port),
+    },
     stdin: "ignore",
     stdout: logFile,
     stderr: logFile,
@@ -128,7 +143,7 @@ function startService(options: {
   return {
     name: service.name,
     pid: subprocess.pid,
-    url: `http://localhost:${String(port)}`,
+    url: serviceUrl(port),
     log,
   };
 }

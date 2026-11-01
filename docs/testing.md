@@ -238,10 +238,12 @@ Tests use `bun:test`. Turborepo runs each task in every package that defines it,
 | `bunx turbo run test --filter=<package>`     | the test suite for one package, such as `@repo/core` |
 | `bun test <file>`, in the package folder     | one test file                                        |
 | `bun test --coverage`, in the package folder | the package's tests, with a coverage report          |
+| `bun run e2e`, after `bun run up`            | the Playwright browser tests in `apps/web/e2e`       |
 
 Tests that cost money or reach real providers, such as live checks and evals, stay out of `test`. Give each one its own script, so that CI and agents do not run them by accident.
 
 - Run the tests for the code you changed while you work. Run the whole suites before you call a goal done.
+- Browser test files end in `.e2e.ts`. `bun test` would also run a `.spec.ts` file.
 - When several agents share one checkout, run browser tests with one worker and your own port, and run the whole suites once, in a clean worktree.
 - A test that times out under load is not proof of a bug. Run the file again on its own before you call it a failure. A test that fails on its own is a real failure.
 - A test that fails sometimes is a bug in the test or the code. Fix it, or record it with its owner. Do not retry it until it passes and move on.

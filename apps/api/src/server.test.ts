@@ -4,7 +4,7 @@ import { z } from "zod";
 import { OrderId } from "@repo/core";
 
 import { createInMemoryOrderStore } from "./orders/store.ts";
-import { ErrorJson, OrderJson } from "./orders/wire.ts";
+import { ErrorJson, OrderJson } from "@repo/contracts";
 import { createServer } from "./server.ts";
 
 const now = new Date("2026-03-01T12:00:00Z");

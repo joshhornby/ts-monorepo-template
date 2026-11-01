@@ -25,7 +25,7 @@ export const OrderJson = z.object({
 
 export type OrderJson = z.infer<typeof OrderJson>;
 
-const errorKinds = [
+export const errorKinds = [
   "invalid-request",
   "not-found",
   "already-shipped",
