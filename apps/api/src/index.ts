@@ -1,16 +1,22 @@
-import { greet } from "@repo/core";
+import { OrderId } from "@repo/core";
 
-const server = Bun.serve({
-  port: Number(process.env["PORT"] ?? 3000),
-  fetch(req) {
-    const url = new URL(req.url);
+import { parseEnv } from "./env.ts";
+import { createInMemoryOrderStore } from "./orders/store.ts";
+import { createServer } from "./server.ts";
 
-    // `bun run up` waits for this to answer before it reports the URL.
-    if (url.pathname === "/health") return new Response("ok");
+const env = parseEnv(process.env);
 
-    const name = url.searchParams.get("name") ?? "world";
+if (!env.ok) {
+  console.error(env.failure);
+  process.exit(1);
+}
 
-    return new Response(greet(name));
+const server = createServer({
+  port: env.value.PORT,
+  dependencies: {
+    orders: createInMemoryOrderStore(),
+    now: () => new Date(),
+    newOrderId: () => OrderId.parse(crypto.randomUUID()),
   },
 });
 

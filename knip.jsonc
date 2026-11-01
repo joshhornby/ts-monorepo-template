@@ -4,6 +4,4 @@
   "ignore": ["tools/eslint/anti-slop/**"],
   // `bun fmt` is a Bun subcommand, not a separate binary
   "ignoreBinaries": ["fmt"],
-  // Installed ahead of use; remove once code imports it
-  "ignoreDependencies": ["zod"],
 }
