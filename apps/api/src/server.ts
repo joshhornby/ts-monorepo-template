@@ -8,10 +8,10 @@ import {
   shipOrder,
   success,
   type Order,
+  type OrderStore,
   type Result,
 } from "@repo/core";
 
-import type { OrderStore } from "./orders/store.ts";
 import {
   CancelOrderRequest,
   PlaceOrderRequest,

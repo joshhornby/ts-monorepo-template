@@ -1,0 +1,26 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "bun test",
+    "lint": "eslint .",
+    "generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@repo/core": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@repo/typescript-config": "workspace:*",
+    "drizzle-kit": "^0.31.11"
+  }
+}

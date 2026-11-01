@@ -1,0 +1,89 @@
+{
+  "id": "9484696f-2888-4041-a926-54489fd94b7c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.orders": {
+      "name": "orders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item": {
+          "name": "item",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "placed_at": {
+          "name": "placed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "shipped_at": {
+          "name": "shipped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancellation_reason": {
+          "name": "cancellation_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "orders_quantity_positive": {
+          "name": "orders_quantity_positive",
+          "value": "\"orders\".\"quantity\" > 0"
+        },
+        "orders_status_columns": {
+          "name": "orders_status_columns",
+          "value": "(\"orders\".\"status\" = 'placed' and \"orders\".\"shipped_at\" is null and \"orders\".\"cancelled_at\" is null and \"orders\".\"cancellation_reason\" is null)\n       or (\"orders\".\"status\" = 'shipped' and \"orders\".\"shipped_at\" is not null and \"orders\".\"cancelled_at\" is null and \"orders\".\"cancellation_reason\" is null)\n       or (\"orders\".\"status\" = 'cancelled' and \"orders\".\"shipped_at\" is null and \"orders\".\"cancelled_at\" is not null and \"orders\".\"cancellation_reason\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

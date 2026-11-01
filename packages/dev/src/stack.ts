@@ -10,9 +10,11 @@ import {
 import { join } from "node:path";
 import { z } from "zod";
 
+import { startInfrastructure, stopInfrastructure } from "./infrastructure.ts";
 import { claimSlot, releaseSlot, type SlotClaim } from "./slots.ts";
 import {
   healthPath,
+  infrastructurePorts,
   servicePort,
   stateDirectory,
   type Service,
@@ -119,6 +121,14 @@ function startService(options: {
     return serviceUrl(servicePort({ workspace, slot, service: other }));
   };
 
+  const portOf = (variable: string): number => {
+    const value = infrastructurePorts({ workspace, slot })[variable];
+
+    if (value === undefined) throw new Error(`No port named ${variable}.`);
+
+    return Number(value);
+  };
+
   const log = logPath({ workspace, name: service.name });
   const logFile = openSync(log, "w");
 
@@ -128,7 +138,7 @@ function startService(options: {
     cwd: join(workspace.root, service.directory),
     env: {
       ...process.env,
-      ...service.environment?.({ urlOf }),
+      ...service.environment?.({ urlOf, portOf }),
       PORT: String(port),
     },
     stdin: "ignore",
@@ -242,6 +252,18 @@ export async function up(options: {
 
   const { slot } = claim;
 
+  const infrastructure = await startInfrastructure({ workspace, slot });
+
+  if (infrastructure.kind === "failed") {
+    if (alive.length === 0) releaseSlot({ workspace, slot });
+
+    return {
+      kind: "unhealthy",
+      service: "infrastructure (docker compose)",
+      logTail: infrastructure.output.slice(-failureLogLines),
+    };
+  }
+
   const started = requested.flatMap((service) =>
     alive.some((running) => running.name === service.name)
       ? []
@@ -275,7 +297,7 @@ export async function up(options: {
   };
 }
 
-/** Stops every service this checkout started and frees its slot. */
+/** Stops every service and container this checkout started, and frees its slot. Data volumes stay. */
 export async function down(
   workspace: Workspace,
 ): Promise<{ readonly stopped: ReadonlyArray<string> }> {
@@ -284,6 +306,7 @@ export async function down(
   if (state === null) return { stopped: [] };
 
   await Promise.all(state.services.map(stopService));
+  await stopInfrastructure({ workspace, slot: state.slot });
   clearState({ workspace, slot: state.slot });
 
   return { stopped: state.services.map((running) => running.name) };

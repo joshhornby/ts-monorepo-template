@@ -60,7 +60,7 @@ If changing an internal implementation breaks many tests without changing behavi
 
 ## Fake at boundaries
 
-Use real application code wherever practical: the real HTTP handlers, the real database, and the real queues and workers, run locally. Database code is tested against a real database.
+Use real application code wherever practical: the real HTTP handlers, the real database, and the real queues and workers, run locally. Database code is tested against a real database: `createTestDatabase()` from `@repo/db/testing` opens Postgres in the test process with [PGlite](https://pglite.dev), with every migration applied.
 
 Fake the systems that are external, expensive, slow or outside our control:
 

@@ -1,0 +1,23 @@
+# Started by `bun run up` before the services, and stopped by `bun run down`.
+# Each checkout gets its own compose project, so its own data volume.
+# `up` sets POSTGRES_PORT from the checkout's slot.
+services:
+  postgres:
+    # The AWS mirror of the official image avoids Docker Hub's pull limits.
+    image: public.ecr.aws/docker/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:?bun run up sets POSTGRES_PORT}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres-data:

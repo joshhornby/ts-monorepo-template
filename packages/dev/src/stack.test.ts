@@ -37,6 +37,7 @@ function createWorkspace(program: string): Workspace {
     slotsDirectory: join(root, "slots"),
     basePort: 40_000 + Math.floor(Math.random() * 10_000),
     services: [service],
+    infrastructure: null,
   };
 }
 

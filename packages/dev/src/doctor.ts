@@ -145,6 +145,43 @@ function checkDependencies(workspace: Workspace): Check {
   };
 }
 
+/** `up` needs Docker when the workspace has infrastructure, such as Postgres. */
+function checkDocker(workspace: Workspace): ReadonlyArray<Check> {
+  if (workspace.infrastructure === null) return [];
+
+  const name = "docker";
+
+  const run = (command: ReadonlyArray<string>): boolean =>
+    Bun.spawnSync([...command], { stdout: "ignore", stderr: "ignore" })
+      .exitCode === 0;
+
+  const without = `\`bun run up\` cannot start the containers in ${workspace.infrastructure.composeFile}, such as Postgres.`;
+
+  if (Bun.which("docker") === null || !run(["docker", "compose", "version"])) {
+    return [
+      {
+        name,
+        status: "fail",
+        problem: `Docker Compose is not installed. ${without}`,
+        fix: "Install Docker Desktop, or Docker Engine with the Compose plugin: https://docs.docker.com/get-docker/",
+      },
+    ];
+  }
+
+  if (!run(["docker", "info"])) {
+    return [
+      {
+        name,
+        status: "fail",
+        problem: `Docker is installed but not running. ${without}`,
+        fix: "Start Docker Desktop, or the Docker daemon.",
+      },
+    ];
+  }
+
+  return [{ name, status: "pass" }];
+}
+
 function checkVariable(variable: EnvironmentVariable): Check {
   const name = `env ${variable.key}`;
   const value = process.env[variable.key] ?? "";
@@ -175,6 +212,7 @@ export function doctor(workspace: Workspace): ReadonlyArray<Check> {
   return [
     checkBunVersion(workspace),
     checkDependencies(workspace),
+    ...checkDocker(workspace),
     ...variables.map(checkVariable),
   ];
 }
