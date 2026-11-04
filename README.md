@@ -23,7 +23,8 @@ Turborepo monorepo using TypeScript and Bun.
 - `packages/core` – shared TypeScript library
 - `packages/dev` – the `setup`, `doctor`, `up`, `down`, `status` and `logs` commands
 - `packages/typescript-config` – shared `tsconfig` base
-- `tools/eslint/anti-slop` – vendored [anti-slop](https://github.com/dmmulroy/anti-slop) lint rules (see `UPSTREAM.md`)
+- `tools/oxlint/anti-slop` – vendored [anti-slop](https://github.com/dmmulroy/anti-slop) Oxlint rules (see `UPSTREAM.md`)
+- `tools/oxlint/repo` – Oxlint rules for this repository's TypeScript standards
 
 ## Commands
 
@@ -34,8 +35,8 @@ bun run dev        # run all apps in watch mode, in the foreground
 bun run build      # build everything
 bun run test       # run tests
 bun run typecheck  # typecheck all packages
-bun run lint       # lint with typescript-eslint (strict, type-checked) + anti-slop
-bun run format     # format with bun fmt (Prettier defaults)
+bun run lint       # lint with Oxlint (type-aware) + anti-slop
+bun run format     # format with oxfmt
 bun run format:check
 bun run knip       # find unused files, exports and dependencies
 ```

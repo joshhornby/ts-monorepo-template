@@ -1,19 +1,20 @@
 {
   "name": "ts-monorepo-template",
   "private": true,
-  "packageManager": "bun@1.4.4",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tools/oxlint/repo"
   ],
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
-    "format": "bun fmt",
-    "format:check": "bun fmt --check",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "knip": "knip",
     "setup": "bun install && bun packages/dev/src/cli.ts setup && bun packages/dev/src/cli.ts doctor",
     "doctor": "bun packages/dev/src/cli.ts doctor",
@@ -23,14 +24,14 @@
     "logs": "bun packages/dev/src/cli.ts logs"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@oxlint/plugins": "1.78.0",
+    "@oxlint/plugins": "1.91.0",
     "@types/bun": "^1.4.4",
-    "eslint": "^10.13.0",
     "knip": "^6.42.1",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "oxlint-tsgolint": "7.0.2005",
     "turbo": "^2.11.10",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.0"
+    "typescript": "~6.0.3"
   },
-  "type": "module"
+  "packageManager": "bun@1.4.4"
 }
