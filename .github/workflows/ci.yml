@@ -1,9 +1,9 @@
 name: CI
 
+# CI is off for now. Only a manual run starts it.
+# To turn it on again, put back the pull_request and push (main) triggers.
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
