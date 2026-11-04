@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
+import { chromium } from "playwright";
 import { z } from "zod";
 
 import type { Workspace } from "./workspace.ts";
@@ -164,6 +165,20 @@ function checkVariable(variable: EnvironmentVariable): Check {
   };
 }
 
+function checkBrowser(): Check {
+  const name = "playwright chromium";
+
+  if (existsSync(chromium.executablePath())) return { name, status: "pass" };
+
+  return {
+    name,
+    status: "fail",
+    problem:
+      "Chromium for Playwright is not installed, so the @repo/ui story tests cannot run.",
+    fix: "Run `bun run setup`.",
+  };
+}
+
 /** Reports what is missing and what breaks without it. Installs nothing. */
 export function doctor(workspace: Workspace): ReadonlyArray<Check> {
   const examplePath = join(workspace.root, ".env.example");
@@ -175,6 +190,7 @@ export function doctor(workspace: Workspace): ReadonlyArray<Check> {
   return [
     checkBunVersion(workspace),
     checkDependencies(workspace),
+    checkBrowser(),
     ...variables.map(checkVariable),
   ];
 }

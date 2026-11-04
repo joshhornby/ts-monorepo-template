@@ -38,6 +38,12 @@ export const defaultWorkspace: Workspace = {
       command: ["bun", "--watch", "src/index.ts"],
       portOffset: 0,
     },
+    {
+      name: "web",
+      directory: "apps/web",
+      command: ["bun", "run", "dev"],
+      portOffset: 1,
+    },
   ],
 };
 

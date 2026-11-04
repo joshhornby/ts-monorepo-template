@@ -4,12 +4,14 @@
 
 - **TypeScript**: read `docs/typescript.md` before you write or review TypeScript.
 - **Tests**: read `docs/testing.md` before you write or review tests.
+- **UI**: read `docs/ui.md` before you write or review UI code or stories.
 - **Terms**: use the terms in `CONTEXT.md`. When you name a new domain concept, add it to the glossary.
 
 ## Conventions
 
 - Use Bun for every command: `bun install`, `bun run <script>`, `bun test`, `bunx`.
 - Tests use `bun:test` and sit next to the code as `*.test.ts`.
+- The exception is `packages/ui`. Its stories are its tests, and Vitest runs them in Chromium. See `docs/ui.md`.
 - A package imports another package through `@repo/<name>`, declared as `"workspace:*"`.
 - When lint or typecheck fails, change the code. The config stays as it is.
 - `tools/oxlint/anti-slop/` is vendored. Record each edit to it under "Local edits" in its `UPSTREAM.md`.

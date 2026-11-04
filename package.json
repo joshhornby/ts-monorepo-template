@@ -16,7 +16,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "knip": "knip",
-    "setup": "bun install && bun packages/dev/src/cli.ts setup && bun packages/dev/src/cli.ts doctor",
+    "setup": "bun install && bun run --cwd packages/ui playwright install chromium && bun packages/dev/src/cli.ts setup && bun packages/dev/src/cli.ts doctor",
     "doctor": "bun packages/dev/src/cli.ts doctor",
     "up": "bun packages/dev/src/cli.ts up",
     "down": "bun packages/dev/src/cli.ts down",
