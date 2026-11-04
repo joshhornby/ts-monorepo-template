@@ -225,6 +225,28 @@ Examples:
 
 Unexpected infrastructure or programming failures may throw. Handle them at system boundaries.
 
+Use [better-result](https://github.com/dmmulroy/better-result) for the result type. Do not write a new result type.
+
+- Define each expected failure as a `TaggedError` class. Give it a `message` and the data that a caller needs.
+- Declare the return type as `Result<T, E>`, where `E` is the union of the failures.
+- Use `Result.gen` and `yield*` to run steps in sequence. The first `Err` stops the sequence.
+- At the boundary, handle the result with `.match`. Handle the error union with `error.match`, so that a new failure breaks the build until a handler exists.
+- Do not call `.unwrap()` in application code. Use it only in tests, or where an `Err` would prove a bug.
+
+`greet` in `packages/core/src/greeting.ts` shows each step. `apps/api/src/index.ts` maps each failure to an HTTP status.
+
+```ts
+export const greet = (
+  input: string,
+): Result<string, InvalidName | ReservedName> =>
+  Result.gen(function* () {
+    const name = yield* parseName(input);
+    const allowedName = yield* rejectReservedName(name);
+
+    return Result.ok(`Hello, ${allowedName}!`);
+  });
+```
+
 ## Small public module surfaces
 
 A module may hold many internal helpers. It exposes only the small set of operations the rest of the application needs.

@@ -10,7 +10,16 @@ const server = Bun.serve({
 
     const name = url.searchParams.get("name") ?? "world";
 
-    return new Response(greet(name));
+    return greet(name).match({
+      ok: (greeting) => new Response(greeting),
+      err: (error) =>
+        error.match({
+          InvalidName: ({ _tag, message }) =>
+            Response.json({ error: _tag, message }, { status: 400 }),
+          ReservedName: ({ _tag, message }) =>
+            Response.json({ error: _tag, message }, { status: 422 }),
+        }),
+    });
   },
 });
 
