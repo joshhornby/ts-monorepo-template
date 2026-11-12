@@ -12,4 +12,6 @@ Add each term as `**Term** — Definition.`
 
 **Story** — One rendered state of a component in Storybook. Each story is also a test.
 
+**Live Test** — A test file named `*.live.test.ts` that drives a real outside system or process, such as a third-party provider or a local server. It runs only from its own opt-in script. See `docs/testing.md`.
+
 **Slot** — One of three port ranges on a machine. A checkout claims one with `bun run up`, so copies of the stack do not share ports.

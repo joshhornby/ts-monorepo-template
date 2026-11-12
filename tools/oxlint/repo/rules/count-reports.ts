@@ -7,19 +7,22 @@ const pluginPath = join(import.meta.dir, "..", "index.ts");
 /**
  * Lints one TypeScript source with only the given repo rule turned on.
  * Oxlint's RuleTester does not run under Bun, so this drives the real CLI.
+ * Some rules look only at test files, so the file name can be set.
  */
 export const countReports = ({
   rule,
   code,
+  filename = "source.ts",
 }: {
   readonly rule: string;
   readonly code: string;
+  readonly filename?: string;
 }): number => {
   const directory = mkdtempSync(join(tmpdir(), "repo-oxlint-"));
 
   try {
     const config = join(directory, ".oxlintrc.json");
-    const source = join(directory, "source.ts");
+    const source = join(directory, filename);
 
     writeFileSync(
       config,
