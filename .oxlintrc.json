@@ -230,6 +230,7 @@
       }
     ],
     "eslint/max-depth": ["error", 3],
+    "repo/no-app-imports": "error",
     "repo/require-options-object": "error",
     "repo/no-null-and-undefined": "error",
     "repo/no-nested-conditional-types": "error",
