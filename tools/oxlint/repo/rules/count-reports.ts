@@ -13,17 +13,18 @@ interface File {
 /**
  * Lints one TypeScript source with only the given repo rule turned on.
  * Oxlint's RuleTester does not run under Bun, so this drives the real CLI.
+ * Some rules look only at test files, so the file name can be set.
  */
 export const countReports = ({
   rule,
   code,
-  path = "source.ts",
+  filename = "source.ts",
   files = [],
 }: {
   readonly rule: string;
   readonly code: string;
-  /** Where the source sits, for a rule that depends on the file's location. */
-  readonly path?: string;
+  /** Relative to the temporary directory. A rule may depend on the name or the location. */
+  readonly filename?: string;
   /** Other files the rule reads, such as a `package.json`. */
   readonly files?: ReadonlyArray<File>;
 }): number => {
@@ -31,9 +32,9 @@ export const countReports = ({
 
   try {
     const config = join(directory, ".oxlintrc.json");
-    const source = join(directory, path);
+    const source = join(directory, filename);
 
-    for (const file of [...files, { path, content: code }]) {
+    for (const file of [...files, { path: filename, content: code }]) {
       mkdirSync(dirname(join(directory, file.path)), { recursive: true });
       writeFileSync(join(directory, file.path), file.content);
     }

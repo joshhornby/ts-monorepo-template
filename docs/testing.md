@@ -228,6 +228,21 @@ High coverage is valuable for core domain behaviour, but do not write tests pure
 
 A well-tested module should give us confidence that meaningful behaviour, failure modes and important branches are protected.
 
+## Wait for the milestone, not the clock
+
+A test waits for the event that marks what it needs: a promise, a message, a state change or a callback. It does not sleep and hope the work is done. A sleep passes or fails with runner load.
+
+- Do not sleep: no `Bun.sleep`, no `setTimeout` wrapped in a promise, no `node:timers/promises`. Hand the test a promise that the code under test, or a fake at its boundary, resolves. `Promise.withResolvers()` makes one.
+- Do not poll in a loop until a condition holds. Subscribe to the change instead.
+- Do not read the wall clock: no `Date.now()`, `new Date()` or `performance.now()`. Use a fixed time or pass a clock in. Do not assert on elapsed time.
+- Do not set a per-test or per-file timeout. Each package sets one ceiling in its `test` script.
+- Do not skip or focus a test without a tracking issue: `// quarantine: #1234 <why>`. Gate a suite on its environment with `describe.skipIf`.
+- Declare a table of cases with `test.each` or `describe.each`, not a loop.
+
+The repository lint rules `no-real-time-wait-in-tests`, `no-polling-loop-in-tests`, `no-wall-clock-in-tests`, `no-test-timeout-or-unreasoned-skip` and `no-test-in-loop` refuse each of these.
+
+A **Live Test** drives a real outside system or process, such as a third-party provider or a local server. Real time is what it measures, so the clock rules leave it alone. Name it `*.live.test.ts`, gate it on its secret or environment variable, and run it from its own script.
+
 ## Running tests
 
 Tests use `bun:test`. Turborepo runs each task in every package that defines it, and caches the result.
@@ -239,7 +254,7 @@ Tests use `bun:test`. Turborepo runs each task in every package that defines it,
 | `bun test <file>`, in the package folder     | one test file                                        |
 | `bun test --coverage`, in the package folder | the package's tests, with a coverage report          |
 
-Tests that cost money or reach real providers, such as live checks and evals, stay out of `test`. Give each one its own script, so that CI and agents do not run them by accident.
+Tests that cost money or reach real providers, such as Live Tests and evals, stay out of `test`. Give each one its own script, so that CI and agents do not run them by accident.
 
 - Run the tests for the code you changed while you work. Run the whole suites before you call a goal done.
 - When several agents share one checkout, run browser tests with one worker and your own port, and run the whole suites once, in a clean worktree.

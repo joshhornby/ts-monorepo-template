@@ -34,7 +34,7 @@ verbatimModuleSyntax
 
 The base config also loads `@total-typescript/ts-reset`. For example, `JSON.parse` returns `unknown`.
 
-Oxlint enforces many rules in this file. `.oxlintrc.json` turns on type-aware linting, the Oxlint equivalents of the typescript-eslint `strictTypeChecked` and `stylisticTypeChecked` presets, extra rules, the anti-slop rules in `tools/oxlint/anti-slop/` and the repository rules in `tools/oxlint/repo/`. Do not turn off a rule to make code pass. Fix the code.
+Oxlint enforces many rules in this file. `.oxlintrc.json` turns on type-aware linting, the Oxlint equivalents of the typescript-eslint `strictTypeChecked` and `stylisticTypeChecked` presets, extra rules, the anti-slop rules in `tools/oxlint/anti-slop/` and the repository rules in `tools/oxlint/repo/`. Do not turn off a rule to make code pass. Fix the code. In the rare case a suppression is right, it says why: end it with `-- reason`, or put the reason in a comment on the line above. Oxlint (`repo/require-suppression-reason`) refuses one without a reason.
 
 ## No `any`
 

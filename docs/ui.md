@@ -26,6 +26,19 @@ Do not add a second component library, icon set or styling method. Do not write 
 
 Storybook is the canonical reference for the component library. A component that has no story is not part of the library.
 
+## Effects
+
+Most state does not need `useEffect`. Compute a value during render, do the work in the event handler, key a component to reset it, and read outside state with `useSyncExternalStore`.
+
+An effect is right only when it keeps something outside React in step with the component while it is mounted: a DOM node, a listener, a timer or a connection. Oxlint (`repo/no-unreasoned-state-sync`) reports every effect. One that stays says what it keeps in step:
+
+```tsx
+// oxlint-disable-next-line repo/no-unreasoned-state-sync -- keeps the DOM scrolled to the newest chat line
+useEffect(() => {
+  end.current?.scrollIntoView({ block: "end" });
+}, [lineCount]);
+```
+
 ## Add a component
 
 1. Look for the component in shadcn/ui first. Add it to the library:

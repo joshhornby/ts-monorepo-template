@@ -31,7 +31,7 @@ describe(rule, () => {
     { path: "apps/web/src/main.ts", code: 'import "@repo/api-client";' },
     { path: "packages/core/src/index.ts", code: 'import "./greeting.ts";' },
   ])("accepts $code in $path", ({ path, code }) => {
-    expect(countReports({ rule, code, path, files })).toBe(0);
+    expect(countReports({ rule, code, filename: path, files })).toBe(0);
   });
 
   test.each([
@@ -61,6 +61,6 @@ describe(rule, () => {
       code: 'import "../../../apps/web/src/app.ts";',
     },
   ])("rejects $code in $path", ({ path, code }) => {
-    expect(countReports({ rule, code, path, files })).toBe(1);
+    expect(countReports({ rule, code, filename: path, files })).toBe(1);
   });
 });
