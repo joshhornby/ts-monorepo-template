@@ -1,8 +1,14 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const pluginPath = join(import.meta.dir, "..", "index.ts");
+
+interface File {
+  /** Relative to the temporary directory. */
+  readonly path: string;
+  readonly content: string;
+}
 
 /**
  * Lints one TypeScript source with only the given repo rule turned on.
@@ -11,15 +17,26 @@ const pluginPath = join(import.meta.dir, "..", "index.ts");
 export const countReports = ({
   rule,
   code,
+  path = "source.ts",
+  files = [],
 }: {
   readonly rule: string;
   readonly code: string;
+  /** Where the source sits, for a rule that depends on the file's location. */
+  readonly path?: string;
+  /** Other files the rule reads, such as a `package.json`. */
+  readonly files?: ReadonlyArray<File>;
 }): number => {
   const directory = mkdtempSync(join(tmpdir(), "repo-oxlint-"));
 
   try {
     const config = join(directory, ".oxlintrc.json");
-    const source = join(directory, "source.ts");
+    const source = join(directory, path);
+
+    for (const file of [...files, { path, content: code }]) {
+      mkdirSync(dirname(join(directory, file.path)), { recursive: true });
+      writeFileSync(join(directory, file.path), file.content);
+    }
 
     writeFileSync(
       config,
@@ -29,7 +46,6 @@ export const countReports = ({
         rules: { [`repo/${rule}`]: "error" },
       }),
     );
-    writeFileSync(source, code);
 
     const result = Bun.spawnSync([
       "oxlint",

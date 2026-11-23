@@ -254,3 +254,5 @@ A module may hold many internal helpers. It exposes only the small set of operat
 Small functions do not mean hundreds of public modules. Keep the public architecture easy to understand.
 
 In the monorepo, each package exposes its public surface through the `exports` field in its `package.json`. Do not import from another package's internal paths.
+
+An app under `apps/` is an end point. No file outside an app imports it: not another app, and not a package. When two apps need the same code, move the code to a package under `packages/`. Oxlint refuses an import of an app from outside it, by package name or by relative path.
